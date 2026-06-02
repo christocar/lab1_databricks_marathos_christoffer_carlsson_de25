@@ -92,6 +92,20 @@ def clean_rows(df):
     return df
 
 
+def normalize_country_codes(df):
+    # Some countries appear with two codes in the source data.
+    # Map the historical ones to the IOC codes used in dim_country.
+    df = df.withColumn(
+        "athlete_country",
+        F.when(F.col("athlete_country") == "DAN", "DEN")
+         .when(F.col("athlete_country") == "IRE", "IRL")
+         .when(F.col("athlete_country") == "SVE", "SWE")
+         .when(F.col("athlete_country") == "MDG", "MAD")
+         .otherwise(F.col("athlete_country"))
+    )
+    return df
+
+
 def select_final_columns(df):
     # Pick the columns we want in silver and give them clean snake_case names
     df = df.select(
