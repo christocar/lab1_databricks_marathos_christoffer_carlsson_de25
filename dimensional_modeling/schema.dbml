@@ -1,0 +1,51 @@
+// Marathos star schema - gold layer
+// Some parts and solutions of this code was found through help from Claude (Anthropic).
+
+Table fct_results {
+  result_id integer [pk]
+  event_id integer [ref: > dim_event.event_id]
+  athlete_id integer [ref: > dim_athlete.athlete_id]
+  country_code string [ref: > dim_country.country_code]
+  start_date_id integer [ref: > dim_date.date_id]
+  end_date_id integer [ref: > dim_date.date_id]
+  event_type string
+  performance_seconds integer
+  performance_distance double
+  performance_unit string
+  age_at_event integer
+}
+
+Table dim_event {
+  event_id integer [pk]
+  event_name string
+  event_distance_value double
+  event_distance_unit string
+  event_type string
+  event_num_finishers integer
+}
+
+Table dim_athlete {
+  athlete_id integer [pk]
+  athlete_year_of_birth integer
+  athlete_gender string
+  country_code string [ref: > dim_country.country_code]
+}
+
+Table dim_country {
+  country_code string [pk]
+  country_name string
+  continent string
+}
+
+Table dim_date {
+  date_id integer [pk]
+  full_date date
+  year integer
+  month integer
+  day integer
+  month_name string
+  day_of_week integer
+  day_name string
+  quarter integer
+  is_weekend boolean
+}
