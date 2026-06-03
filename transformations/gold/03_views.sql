@@ -1,11 +1,7 @@
--- Some parts and solutions of this code was found through help from Claude.
--- Views over the gold layer, two per marathon type as required by Task 5.
--- Run this file to create or replace all views in one go.
+-- Some parts and solutions of this code was found through help from Claude (Anthropic).
+-- Views over the gold layer. Task 5 asks for at least two per marathon type.
+-- The last two are extra ones used by the dashboard.
 
-
--- ============================================================
--- DISTANCE EVENTS (km/mi - performance is a time)
--- ============================================================
 
 -- Top 10 fastest finishers per distance event
 CREATE OR REPLACE VIEW marathos.gold.vw_distance_top10_fastest_per_event AS
@@ -52,10 +48,6 @@ GROUP BY age_group
 ORDER BY age_group;
 
 
--- ============================================================
--- TIME EVENTS (h - performance is a distance)
--- ============================================================
-
 -- Top 10 longest distances per time event (24h, 12h, 6h etc)
 CREATE OR REPLACE VIEW marathos.gold.vw_time_top10_longest_per_event AS
 WITH ranked AS (
@@ -100,10 +92,6 @@ GROUP BY age_group
 ORDER BY age_group;
 
 
--- ============================================================
--- MULTI-DAY EVENTS (d - performance is a distance)
--- ============================================================
-
 -- Top 10 longest distances in multi-day events
 CREATE OR REPLACE VIEW marathos.gold.vw_multiday_top10_longest AS
 SELECT
@@ -134,5 +122,30 @@ SELECT
 FROM marathos.gold.fct_results f
 JOIN marathos.gold.dim_country c ON f.country_code = c.country_code
 WHERE f.event_type = 'multi_day' AND f.performance_distance IS NOT NULL
+GROUP BY c.country_name, c.continent
+ORDER BY num_results DESC;
+
+
+-- Results per year across all event types (used by dashboard)
+CREATE OR REPLACE VIEW marathos.gold.vw_results_per_year AS
+SELECT
+    d.year,
+    f.event_type,
+    COUNT(*) AS num_results
+FROM marathos.gold.fct_results f
+JOIN marathos.gold.dim_date d ON f.start_date_id = d.date_id
+GROUP BY d.year, f.event_type
+ORDER BY d.year, f.event_type;
+
+
+-- Results and unique athletes per country (used by dashboard)
+CREATE OR REPLACE VIEW marathos.gold.vw_results_by_country AS
+SELECT
+    c.country_name,
+    c.continent,
+    COUNT(*) AS num_results,
+    COUNT(DISTINCT f.athlete_id) AS unique_athletes
+FROM marathos.gold.fct_results f
+JOIN marathos.gold.dim_country c ON f.country_code = c.country_code
 GROUP BY c.country_name, c.continent
 ORDER BY num_results DESC;

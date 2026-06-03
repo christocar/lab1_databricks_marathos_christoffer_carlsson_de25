@@ -3,8 +3,10 @@ from pyspark.sql.window import Window
 
 
 def add_event_id(df):
-    # Gives each unique event name the same id, using dense_rank like the lab suggested
-    w = Window.orderBy("Event name")
+    # Same event_name can cover several different races (Sri Chinmoy organizes
+    # 6-day, 10-day, 1000mi, 1300mi etc under one umbrella name). To get a unique
+    # event_id per actual race we rank on name + distance + unit together.
+    w = Window.orderBy("Event name", "event_value", "event_unit")
     df = df.withColumn("event_id", F.dense_rank().over(w))
     return df
 
